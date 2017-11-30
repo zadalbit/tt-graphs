@@ -24,9 +24,9 @@ class Chart extends CI_Controller {
 		$dc_arr = array();
 		$i = 0;
 		
-		$start = DateTime::createFromFormat('d/m/Y', $this->input->post('startDate'));
+		$start = DateTime::createFromFormat('m/d/Y', $this->input->post('startDate'));
 		
-		$end = DateTime::createFromFormat('d/m/Y', $this->input->post('endDate'));
+		$end = DateTime::createFromFormat('m/d/Y', $this->input->post('endDate'));
 		$end = $end->modify( '+1 day' ); 
 
 		$interval = new DateInterval('P1D');

@@ -8,13 +8,11 @@ class Chart_model extends CI_Model {
 	
 	function get_entries_by_date()
     {
-		$start = $this->input->post('startDate'); 
-		list($day, $month, $year) = sscanf($start, "%02d/%02d/%04d"); 
-		$start="$year-$month-$day"; 
+		$date = DateTime::createFromFormat('m/d/Y', $this->input->post('startDate'));
+		$start = $date->format('Y-m-d');
 		
-		$end = $this->input->post('endDate'); 
-		list($day, $month, $year) = sscanf($end, "%02d/%02d/%04d"); 
-		$end="$year-$month-$day"; 
+		$date = DateTime::createFromFormat('m/d/Y', $this->input->post('endDate'));
+		$end = $date->format('Y-m-d');
 		
 		return $this->db->select('*')->where('datein >=', $start)->where('datein <=', $end)->get('reservations')->result();
     }
