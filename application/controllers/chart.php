@@ -62,6 +62,7 @@ class Chart extends CI_Controller {
 		
 		$shag = $this->input->post('shag');
 		$shagNumber = 0;
+		$classic_max = 0;
 		
 		for ($i = 1; $i <= count($days); $i++) {
 			
@@ -71,7 +72,12 @@ class Chart extends CI_Controller {
 				
 				if($s_key = array_search($days[$i-1], $sorted_arr[$dc_arr[$k]]))
 				{
-					$tmp_arr[] = $sorted_arr[$dc_arr[$k]][$s_key+1];
+					$curr_amount = $sorted_arr[$dc_arr[$k]][$s_key+1];
+					
+					if($classic_max < $curr_amount)
+						$classic_max = $curr_amount;
+				
+					$tmp_arr[] = $curr_amount;
 				}
 				else
 				{
@@ -79,6 +85,7 @@ class Chart extends CI_Controller {
 				}
 			}
 			
+			$by_shag[$shagNumber][0] = $days[$i-1];
 			$by_shag[$shagNumber][] = $tmp_arr;
 			
 			if (($i % $shag) == 0)
@@ -88,12 +95,22 @@ class Chart extends CI_Controller {
 		}
 		
 		foreach ($by_shag as $key => $value) {
-			$key++;
+			$date = DateTime::createFromFormat('Y-m-d', $value[0]);
+			$formated = $date->format('Y,n,j');
 			
-			if($key==1)
-				$row = "[$key";
+			$pieces = explode(",", $formated);
+			$formated = $pieces[0].','.(intval($pieces[1])-1).','.$pieces[2];
+			
+			if($key==0)
+			{
+				$classic_row = "new Date($formated)";
+				$row = "[new Date($formated)";
+			}
 			else
-				$row .= ",[$key";
+			{
+				$classic_row .= ", new Date($formated)";
+				$row .= ", [new Date($formated)";
+			}
 			
 			$tmp_arr = array();
 			
@@ -102,8 +119,11 @@ class Chart extends CI_Controller {
 			}
 			
 			foreach ($value as $k => $v) {
-				foreach ($v as $id => $am) {
-					$tmp_arr[$id] += $am;
+				if($k!=0)
+				{
+					foreach ($v as $id => $am) {
+						$tmp_arr[$id] += $am;
+					}
 				}
 			}
 			
@@ -114,6 +134,8 @@ class Chart extends CI_Controller {
 			$row .= "]";
 		}
 		
+		$data['classic_mode'] = $classic_row;
+		$data['classic_max'] = $classic_max;
 		$data['points'] = $row;
 		$data['shag'] = $shag;
 		$data['dc_arr'] = $dc_arr;

@@ -76,34 +76,79 @@
 	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 	<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type="text/javascript">
-      google.charts.load('current', {'packages':['line']});
-      google.charts.setOnLoadCallback(drawChart);
+	google.charts.load('current', {'packages':['line', 'corechart']});
+    google.charts.setOnLoadCallback(drawChart);
 
     function drawChart() {
 
+      var button = document.getElementById('change-chart');
+      var chartDiv = document.getElementById('chart_div');
+
       var data = new google.visualization.DataTable();
-      data.addColumn('number', 'Day *= <?=$shag?>');
-	  
-<?php foreach ($dc_arr as $item): ?>
-	data.addColumn('number', 'dc_id = <?=$item?>');
-<?php endforeach; ?>
+      data.addColumn('date', 'Month');
+	<?php foreach ($dc_arr as $item): ?>
+		data.addColumn('number', 'dc_id = <?=$item?>');
+	<?php endforeach; ?>
 
       data.addRows([<?=$points;?>]);
 
-      var options = {
+      var materialOptions = {
         chart: {
-          title: 'Test chart',
-          subtitle: '(USD)'
+          title: 'Total amount earned per day *= <?=$shag;?>'
         },
         width: 900,
-        height: 500
+        height: 500,
+        series: {
+          // Gives each series an axis name that matches the Y-axis below.
+          0: {axis: 'Amount'}
+        },
+        axes: {
+          // Adds labels to each axis; they don't have to match the axis names.
+          y: {
+            Amount: {label: 'Total amount'}
+          }
+        }
       };
 
-      var chart = new google.charts.Line(document.getElementById('linechart_material'));
+      var classicOptions = {
+        title: 'Total amount earned per day *= <?=$shag;?>',
+        width: 900,
+        height: 500,
+        // Gives each series an axis that matches the vAxes number below.
+        series: {
+          0: {targetAxisIndex: 0}
+        },
+        vAxes: {
+          // Adds titles to each axis.
+          0: {title: 'Total amount'}
+        },
+        hAxis: {
+          ticks: [<?=$classic_mode;?>]
+        },
+        vAxis: {
+          viewWindow: {
+            max: <?=$classic_max;?>
+          }
+        }
+      };
 
-      chart.draw(data, google.charts.Line.convertOptions(options));
+      function drawMaterialChart() {
+        var materialChart = new google.charts.Line(chartDiv);
+        materialChart.draw(data, materialOptions);
+        button.innerText = 'Change to Classic';
+        button.onclick = drawClassicChart;
+      }
+
+      function drawClassicChart() {
+        var classicChart = new google.visualization.LineChart(chartDiv);
+        classicChart.draw(data, classicOptions);
+        button.innerText = 'Change to Material';
+        button.onclick = drawMaterialChart;
+      }
+
+      drawMaterialChart();
+
     }
-
     </script>
 </head>
 <body>
@@ -113,9 +158,9 @@
 
 	<div id="body">
 	
-		<h2>Output chart:</h2>
+		<h2>Output chart:</h2><button id="change-chart">Change to Classic</button><br><br>
 
-		<div id="linechart_material" style="width: 900px;margin:0 auto;"></div>
+		<div id="chart_div" style="width: 900px;margin:0 auto;"></div>
 	</div>
 
 	<p class="footer">Page rendered in <strong>{elapsed_time}</strong> seconds</p>
